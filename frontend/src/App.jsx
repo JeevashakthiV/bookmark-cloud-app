@@ -4,6 +4,7 @@ import { ref, push, onValue, remove, update } from 'firebase/database';
 import { auth, database } from './firebaseConfig';
 import AuthPage from './AuthPage.jsx';
 import { summarizeURL } from './summarizerAPI';
+import ReactMarkdown from 'react-markdown';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -14,6 +15,7 @@ function App() {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [regeneratingId, setRegeneratingId] = useState(null);
+  const [expandedBookmarks, setExpandedBookmarks] = useState({});
 
   // Check authentication state
   useEffect(() => {
@@ -135,6 +137,13 @@ function App() {
     } finally {
       setRegeneratingId(null);
     }
+  };
+
+  const toggleExpandBookmark = (bookmarkId) => {
+    setExpandedBookmarks(prev => ({
+      ...prev,
+      [bookmarkId]: !prev[bookmarkId]
+    }));
   };
 
   if (loading) {
@@ -279,9 +288,47 @@ function App() {
 
                   {/* Summary */}
                   <div className="mb-4">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">AI Summary:</h4>
-                    <div className="text-sm text-gray-600 whitespace-pre-wrap line-clamp-6">
-                      {bookmark.summary}
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-medium text-gray-700">AI Summary:</h4>
+                      <button
+                        onClick={() => toggleExpandBookmark(bookmark.id)}
+                        className="text-xs text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1"
+                      >
+                        {expandedBookmarks[bookmark.id] ? (
+                          <>
+                            Show Less
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                            </svg>
+                          </>
+                        ) : (
+                          <>
+                            Show More
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                    <div className={`text-sm text-gray-600 prose prose-sm max-w-none ${!expandedBookmarks[bookmark.id] ? 'line-clamp-4' : ''}`}>
+                      <ReactMarkdown
+                        components={{
+                          // Style markdown elements
+                          p: ({node, ...props}) => <p className="mb-2" {...props} />,
+                          ul: ({node, ...props}) => <ul className="list-disc list-inside mb-2 space-y-1" {...props} />,
+                          ol: ({node, ...props}) => <ol className="list-decimal list-inside mb-2 space-y-1" {...props} />,
+                          li: ({node, ...props}) => <li className="ml-2" {...props} />,
+                          strong: ({node, ...props}) => <strong className="font-semibold text-gray-800" {...props} />,
+                          em: ({node, ...props}) => <em className="italic" {...props} />,
+                          code: ({node, ...props}) => <code className="bg-gray-100 px-1 py-0.5 rounded text-xs" {...props} />,
+                          h1: ({node, ...props}) => <h1 className="text-base font-bold mb-2 text-gray-800" {...props} />,
+                          h2: ({node, ...props}) => <h2 className="text-sm font-bold mb-2 text-gray-800" {...props} />,
+                          h3: ({node, ...props}) => <h3 className="text-sm font-semibold mb-1 text-gray-800" {...props} />,
+                        }}
+                      >
+                        {bookmark.summary}
+                      </ReactMarkdown>
                     </div>
                   </div>
 
