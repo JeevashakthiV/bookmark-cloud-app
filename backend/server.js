@@ -149,7 +149,7 @@ app.post('/api/summarize', async (req, res) => {
     console.log('Generating AI summary...');
     
     // Generate summary using Gemini
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
     
     const prompt = `Summarize the following webpage content in 3-5 concise bullet points. Focus on the main ideas and key information. Keep it brief and informative:
 
